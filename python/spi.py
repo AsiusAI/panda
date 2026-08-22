@@ -82,7 +82,9 @@ class SpiDevice:
   Provides locked, thread-safe access to a panda's SPI interface.
   """
 
-  MAX_SPEED = 50000000  # max of the SDM845
+  # The Dragon Q6A header translates SPI through a UM3304. Keep enough
+  # round-trip margin for SCK A->B and MISO B->A propagation.
+  MAX_SPEED = 25000000
 
   def __init__(self, speed=MAX_SPEED):
     assert speed <= self.MAX_SPEED
