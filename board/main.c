@@ -112,6 +112,10 @@ static void __attribute__ ((noinline)) enable_fpu(void) {
 #define HEARTBEAT_IGNITION_CNT_ON 5U
 #define HEARTBEAT_IGNITION_CNT_OFF 2U
 
+// Cuatro powers its SOM. Give the SOM time to assert SOM_GPIO during a cold
+// boot before deep STOP cuts its power; normal heartbeat limits stay unchanged.
+#define CUATRO_SOM_BOOT_GRACE_PERIOD 15U
+
 // called at 8Hz
 static void tick_handler(void) {
   static uint32_t siren_countdown = 0; // siren plays while countdown > 0
@@ -375,7 +379,9 @@ int main(void) {
         }
       #endif
     } else {
-      if ((hw_type == HW_TYPE_CUATRO) && !current_board->read_som_gpio()) {
+      if ((hw_type == HW_TYPE_CUATRO) &&
+          (uptime_cnt >= CUATRO_SOM_BOOT_GRACE_PERIOD) &&
+          !current_board->read_som_gpio()) {
         assert_fatal(current_safety_mode == SAFETY_SILENT, "Error: Entering low power mode while not in SAFETY_SILENT. Hanging\n");
         enter_stop_mode(); // deep sleep, wakes on CAN or SBU activity
         assert_fatal(false, "Error: enter_stop_mode returned after system reset. Hanging\n");
