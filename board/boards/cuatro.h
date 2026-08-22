@@ -90,6 +90,7 @@ static void cuatro_init(void) {
 
   // Sound codec
   cuatro_set_amp_enabled(false);
+  set_gpio_mode(GPIOA, 4, MODE_ANALOG);             // DAC1_OUT1 / AMP_IN
   set_gpio_alternate(GPIOA, 2, GPIO_AF8_SAI4);    // SAI4_SCK_B
   set_gpio_alternate(GPIOC, 0, GPIO_AF8_SAI4);    // SAI4_FS_B
   set_gpio_alternate(GPIOD, 11, GPIO_AF10_SAI4);  // SAI4_SD_A
