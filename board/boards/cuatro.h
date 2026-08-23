@@ -65,6 +65,11 @@ static void cuatro_init(void) {
   set_gpio_mode(GPIOD, 8, MODE_OUTPUT);
 
   // FDCAN3, different pins on this package than the rest of the reds
+  set_gpio_pullup(GPIOG, 9, PULL_NONE);
+  set_gpio_mode(GPIOG, 9, MODE_ANALOG);
+  set_gpio_pullup(GPIOG, 10, PULL_NONE);
+  set_gpio_mode(GPIOG, 10, MODE_ANALOG);
+
   set_gpio_pullup(GPIOD, 12, PULL_NONE);
   set_gpio_alternate(GPIOD, 12, GPIO_AF5_FDCAN3);
   set_gpio_pullup(GPIOD, 13, PULL_NONE);
