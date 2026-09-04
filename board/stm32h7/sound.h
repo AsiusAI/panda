@@ -7,7 +7,7 @@ __attribute__((section(".sram4"))) static uint16_t sound_tx_buf[2][SOUND_TX_BUF_
 __attribute__((section(".sram4"))) static uint32_t mic_rx_buf[2][MIC_RX_BUF_SIZE];
 __attribute__((section(".sram4"))) static uint16_t mic_tx_buf[2][MIC_TX_BUF_SIZE];
 
-#define SOUND_IDLE_TIMEOUT 2U
+#define SOUND_IDLE_TIMEOUT 4U
 #define MIC_SKIP_BUFFERS 2U // Skip first 2 buffers (1024 samples = ~21ms at 48kHz)
 static uint8_t sound_idle_count;
 static uint8_t mic_idle_count;
@@ -72,14 +72,13 @@ static void BDMA_Channel0_IRQ_Handler(void) {
     }
   }
 
-  // Process signed 16-bit PCM into unsigned 12-bit DAC samples.
+  // process samples (shift to 12b and bias to be unsigned)
   bool sound_playing = false;
   uint32_t abs_sum = 0U;
 
   for (uint16_t i=0U; i < SOUND_RX_BUF_SIZE; i += 2U) {
     // since we are playing mono and receiving stereo, we take every other sample
-    int32_t signed_sample = (int16_t)sound_rx_buf[rx_buf_idx][i];
-    uint16_t sample = (uint16_t)((1L << 11) + (signed_sample / 16L));
+    uint16_t sample = ((sound_rx_buf[rx_buf_idx][i] + (1UL << 14)) >> 3) & 0xFFFU;
     sound_tx_buf[playback_buf][i/2U] = sample;
     if (sound_rx_buf[rx_buf_idx][i] > 0U) {
       sound_playing = true;
@@ -178,8 +177,7 @@ void sound_init(void) {
   // stereo audio in
   register_set(&SAI4_Block_B->CR1, SAI_xCR1_DMAEN | (0b00UL << SAI_xCR1_SYNCEN_Pos) | (0b100U << SAI_xCR1_DS_Pos) | (0b11U << SAI_xCR1_MODE_Pos), 0x0FFB3FEFU);
   register_set(&SAI4_Block_B->CR2, (0b001U << SAI_xCR2_FTH_Pos), 0xFFFBU);
-  // Standard I2S delays the first data bit by one clock after the WS edge.
-  register_set(&SAI4_Block_B->FRCR, (31U << SAI_xFRCR_FRL_Pos) | SAI_xFRCR_FSOFF, 0x7FFFFU);
+  register_set(&SAI4_Block_B->FRCR, (31U << SAI_xFRCR_FRL_Pos), 0x7FFFFU);
   register_set(&SAI4_Block_B->SLOTR, (0b11UL << SAI_xSLOTR_SLOTEN_Pos) | (1UL << SAI_xSLOTR_NBSLOT_Pos) | (0b01UL << SAI_xSLOTR_SLOTSZ_Pos), 0xFFFF0FDFU); // NBSLOT definition is vague
 
   // init sound DMA (SAI4_B -> memory, double buffers)

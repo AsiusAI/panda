@@ -90,20 +90,14 @@ void fake_i2c_siren_set(bool enabled) {
 void fake_siren_set(bool enabled) {
   static bool initialized = false;
   static bool fake_siren_enabled = false;
-  static bool delay_disable = false;
-
-  // The caller alternates the siren state every 125 ms. Keep the DAC and amp
-  // enabled across the intervening disabled call so the tone remains audible.
-  const bool output_enabled = enabled || delay_disable;
-  delay_disable = enabled;
 
   if (!initialized) {
     siren_tim7_init();
     initialized = true;
   }
 
-  if (output_enabled != fake_siren_enabled) {
-    if (output_enabled) {
+  if (enabled != fake_siren_enabled) {
+    if (enabled) {
       sound_stop_dac();
       siren_dac_init();
       siren_dma_init();
@@ -116,6 +110,6 @@ void fake_siren_set(bool enabled) {
       sound_init_dac();
       register_set_bits(&BDMA_Channel0->CCR, BDMA_CCR_EN);
     }
-    fake_siren_enabled = output_enabled;
+    fake_siren_enabled = enabled;
   }
 }

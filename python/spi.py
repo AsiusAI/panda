@@ -82,10 +82,9 @@ class SpiDevice:
   Provides locked, thread-safe access to a panda's SPI interface.
   """
 
-  # Request 37 MHz to select the Dragon GENI controller's 33.33 MHz clock
-  # step. The next step (37.5 MHz actual) is not reliable through the Q6A's
-  # UM3304 header translator.
-  MAX_SPEED = 37000000
+  # Request 37 MHz on Dragon to select the GENI controller's 33.33 MHz clock
+  # step. Other hosts retain upstream's 50 MHz maximum.
+  MAX_SPEED = 37000000 if os.path.isfile("/ASIUS") else 50000000
 
   def __init__(self, speed=MAX_SPEED):
     assert speed <= self.MAX_SPEED
