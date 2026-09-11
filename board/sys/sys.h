@@ -9,7 +9,7 @@ extern uint8_t global_critical_depth;
 
 #ifndef ENTER_CRITICAL
 #define ENTER_CRITICAL()                                      \
-  __set_BASEPRI(1U << (8U - __NVIC_PRIO_BITS));               \
+  __disable_irq();                                            \
   global_critical_depth += 1U;
 #endif
 
@@ -17,7 +17,7 @@ extern uint8_t global_critical_depth;
 #define EXIT_CRITICAL()                                       \
   global_critical_depth -= 1U;                                \
   if ((global_critical_depth == 0U) && interrupts_enabled) {  \
-    __set_BASEPRI(0U);                                        \
+    __enable_irq();                                           \
   }
 #endif
 

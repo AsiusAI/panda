@@ -225,10 +225,9 @@ void spi_rx_done(void) {
     spi_state = SPI_STATE_HEADER_NACK;
     response_len = 1U;
   }
-  __disable_irq();
-  spi_state = next_rx_state;
   llspi_miso_dma(spi_buf_tx, response_len);
-  __enable_irq();
+
+  spi_state = next_rx_state;
   if (!checksum_valid) {
     spi_error_count += 1U;
   }
