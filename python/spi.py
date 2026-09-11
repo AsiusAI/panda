@@ -82,7 +82,8 @@ class SpiDevice:
   Provides locked, thread-safe access to a panda's SPI interface.
   """
 
-  MAX_SPEED = 50000000  # max of the SDM845
+  # Request 37 MHz to select Dragon GENI's 33.33 MHz clock step.
+  MAX_SPEED = 37000000
 
   def __init__(self, speed=MAX_SPEED):
     assert speed <= self.MAX_SPEED
